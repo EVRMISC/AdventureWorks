@@ -29,8 +29,12 @@ if (!defined('SQLSRV_FETCH_BOTH')) define('SQLSRV_FETCH_BOTH', PDO::FETCH_BOTH);
 
 if (!function_exists('sqlsrv_query')) {
     function sqlsrv_query($conn, $tsql, $params = []) {
-        // MySQL doesn't use the 'dbo.' schema, so remove it from queries
-        $tsql = str_replace('dbo.', '', $tsql);
+        // Map SQL Server schema paths (Schema.Table) to MySQL table names (Schema_Table)
+        $tsql = str_replace(
+            ['dbo.', 'HumanResources.', 'Person.', 'Sales.', 'Purchasing.'], 
+            ['dbo_', 'HumanResources_', 'Person_', 'Sales_', 'Purchasing_'], 
+            $tsql
+        );
         try {
             if (empty($params)) {
                 $stmt = $conn->query($tsql);
