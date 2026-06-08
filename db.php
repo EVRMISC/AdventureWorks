@@ -1,6 +1,5 @@
 <?php
-// Load connection details from environment (Render provides them automatically)
-$myHost = getenv('DB_HOST') ?: 'adventureworksmjgja-marcjasongonzales19-1056.h.aivencloud.com';
+$myHost = getenv('DB_HOST') ?: 'mysql-284fd505-marcjasongonzales19-1056.g.aivencloud.com';
 $myPort = getenv('DB_PORT') ?: 14001;
 $myDb   = getenv('DB_NAME') ?: 'defaultdb';
 $myUser = getenv('DB_USER') ?: 'avnadmin';
@@ -22,5 +21,3 @@ try {
 } catch (PDOException $e) {
     die('MySQL connection failed: ' . $e->getMessage());
 }
-?>
-
