@@ -21,3 +21,55 @@ try {
 } catch (PDOException $e) {
     die('MySQL connection failed: ' . $e->getMessage());
 }
+
+// POLYFILL FOR SQL SERVER FUNCTIONS TO USE MYSQL (PDO)
+if (!defined('SQLSRV_FETCH_ASSOC')) define('SQLSRV_FETCH_ASSOC', PDO::FETCH_ASSOC);
+if (!defined('SQLSRV_FETCH_NUM')) define('SQLSRV_FETCH_NUM', PDO::FETCH_NUM);
+if (!defined('SQLSRV_FETCH_BOTH')) define('SQLSRV_FETCH_BOTH', PDO::FETCH_BOTH);
+
+if (!function_exists('sqlsrv_query')) {
+    function sqlsrv_query($conn, $tsql, $params = []) {
+        // MySQL doesn't use the 'dbo.' schema, so remove it from queries
+        $tsql = str_replace('dbo.', '', $tsql);
+        try {
+            if (empty($params)) {
+                $stmt = $conn->query($tsql);
+                return $stmt ?: false;
+            } else {
+                $stmt = $conn->prepare($tsql);
+                $success = $stmt->execute($params);
+                return $success ? $stmt : false;
+            }
+        } catch (PDOException $e) {
+            $GLOBALS['sqlsrv_last_error'] = $e->getMessage();
+            return false;
+        }
+    }
+}
+
+if (!function_exists('sqlsrv_fetch_array')) {
+    function sqlsrv_fetch_array($stmt, $fetchType = SQLSRV_FETCH_BOTH) {
+        if (!$stmt) return false;
+        return $stmt->fetch($fetchType);
+    }
+}
+
+if (!function_exists('sqlsrv_has_rows')) {
+    function sqlsrv_has_rows($stmt) {
+        if (!$stmt) return false;
+        return $stmt->rowCount() > 0;
+    }
+}
+
+if (!function_exists('sqlsrv_free_stmt')) {
+    function sqlsrv_free_stmt($stmt) {
+        if ($stmt) $stmt->closeCursor();
+        return true;
+    }
+}
+
+if (!function_exists('sqlsrv_errors')) {
+    function sqlsrv_errors() {
+        return [['message' => $GLOBALS['sqlsrv_last_error'] ?? 'Unknown database error']];
+    }
+}
