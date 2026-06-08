@@ -1,0 +1,8 @@
+{
+    "name": "adventureworks/portal",
+    "description": "AdventureWorks Reports Portal",
+    "type": "project",
+    "require": {
+        "php": ">=8.0"
+    }
+}
